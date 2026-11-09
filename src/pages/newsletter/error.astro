@@ -1,0 +1,40 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getContent } from "../../lib/content";
+
+const { gallery } = await getContent();
+---
+
+<Base
+  noindex
+  title="Subscription not completed — Daily Dose Gallery"
+  description="Your subscription to the newsletter of Daily Dose Gallery in Blaricum, Het Gooi, was not completed. Please try again."
+>
+  <section class="container intro">
+    <div class="split">
+      <p class="label">Newsletter</p>
+      <div>
+        <h1 class="statement">Your subscription was not completed.</h1>
+        <p class="body text">
+          Please check your email address and try again. If it still does not work, email us at
+          <a class="mail" href={`mailto:${gallery.email}`}>{gallery.email}</a>.
+        </p>
+        <a class="link" href="/contact/#newsletter-label">Try again</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    padding-top: 24px;
+  }
+  .text {
+    margin: 24px 0 16px;
+  }
+  .mail {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+</style>

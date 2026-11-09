@@ -13,7 +13,7 @@ const year = new Date().getFullYear();
     <hr class="rule" />
     <ul>
       <li class="name">DAILY DOSE GALLERY</li>
-      {gallery.instagram && <li><a href={gallery.instagram} rel="me noopener">Instagram</a></li>}
+      {gallery.instagram && <li><a href={gallery.instagram} target="_blank" rel="me noopener noreferrer">Instagram<span class="visually-hidden"> (opens in a new tab)</span></a></li>}
       <li><a href={`mailto:${gallery.email}`}>{gallery.email}</a></li>
       <li><a href="/privacy/">Privacy</a></li>
       <li>{gallery.street}, {gallery.city}</li>

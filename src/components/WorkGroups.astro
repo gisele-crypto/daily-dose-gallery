@@ -14,9 +14,11 @@ interface Props {
   content: Content;
   works: Artwork[];
   showArtist?: boolean;
+  /** Level of the work titles: h2 when the page has no h2 above them. */
+  headingLevel?: "h2" | "h3";
 }
 
-const { content, works, showArtist = false } = Astro.props;
+const { content, works, showArtist = false, headingLevel = "h3" } = Astro.props;
 const groups = groupWorks(works);
 const titles = { square: "Square works", tall: "Tall works", landscape: "Landscape works" };
 ---
@@ -26,7 +28,13 @@ const titles = { square: "Square works", tall: "Tall works", landscape: "Landsca
     groups.map((group) => (
       <section class={`group group-${group.format}`} aria-label={titles[group.format]}>
         {group.format === "tall" ? (
-          <TallRow content={content} units={group.units} showArtist={showArtist} showStatus />
+          <TallRow
+            content={content}
+            units={group.units}
+            showArtist={showArtist}
+            showStatus
+            headingLevel={headingLevel}
+          />
         ) : (
           <ul class="list">
             {group.units.flat().map((work) => (
@@ -47,6 +55,7 @@ const titles = { square: "Square works", tall: "Tall works", landscape: "Landsca
                   artist={artistOf(content, work)}
                   showArtist={showArtist}
                   showStatus
+                  headingLevel={headingLevel}
                 />
               </li>
             ))}

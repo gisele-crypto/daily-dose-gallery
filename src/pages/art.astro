@@ -13,7 +13,7 @@ const names = [...new Set(content.artists.map((a) => a.name))].join(", ");
 
 <Base
   title="Art — Paintings for sale | Daily Dose Gallery"
-  description={`All ${count} paintings at Daily Dose Gallery in Blaricum, by ${names}. Oil on canvas, prices on request. Enquire by email or visit the gallery.`}
+  description={`All ${count} paintings at Daily Dose Gallery in Blaricum, Het Gooi, by ${names}. Oil on canvas, prices on request. Enquire by email or visit us.`}
   breadcrumbs={[{ name: "Art", path: "/art/" }]}
   jsonLd={jsonLd}
 >
@@ -25,7 +25,7 @@ const names = [...new Set(content.artists.map((a) => a.name))].join(", ");
   </div>
 
   <div class="container works">
-    <WorkGroups content={content} works={works} showArtist />
+    <WorkGroups content={content} works={works} showArtist headingLevel="h2" />
   </div>
 </Base>
 

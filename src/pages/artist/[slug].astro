@@ -27,8 +27,11 @@ const jsonLd = [
 ];
 const lines = [artist.origin, artist.selfTaught ? "Self-taught" : ""].filter(Boolean);
 const shareWork = works.find((w) => !w.placeholder);
+// Paintings by the artist at the gallery, then as much of the bio as fits.
+const lead = `Paintings by ${artist.name} at Daily Dose Gallery in Blaricum, Het Gooi.`;
+const room = 158 - lead.length;
 const description =
-  bioText.length > 155 ? `${bioText.slice(0, bioText.lastIndexOf(" ", 150))}…` : bioText;
+  bioText.length > room ? `${lead} ${bioText.slice(0, bioText.lastIndexOf(" ", room - 2))}…` : `${lead} ${bioText}`;
 ---
 
 <Base

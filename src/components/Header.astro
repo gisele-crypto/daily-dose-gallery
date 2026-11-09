@@ -1,4 +1,6 @@
 ---
+import { Image } from "astro:assets";
+import logo from "../../images/brand/logo-stacked-black-trimmed.png";
 import { artistUrl, sortedArtists } from "../lib/content";
 import type { Content } from "../lib/types";
 
@@ -21,9 +23,16 @@ const path = Astro.url.pathname;
 
 <header class="site-header">
   <div class="container inner">
-    <a class="logo" href="/" aria-label="Daily Dose Gallery, home">
-      <span class="logo-main">DAILY DOSE</span>
-      <span class="logo-sub">GALLERY</span>
+    <a class="logo" href="/">
+      <Image
+        src={logo}
+        alt="Daily Dose Gallery"
+        height={48}
+        densities={[1, 2, 3]}
+        format="png"
+        loading="eager"
+        fetchpriority="high"
+      />
     </a>
     <nav aria-label="Main">
       <ul>
@@ -53,22 +62,17 @@ const path = Astro.url.pathname;
     gap: 16px 32px;
   }
   .logo {
-    display: flex;
-    flex-direction: column;
-    line-height: 1;
+    display: block;
   }
-  .logo-main {
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.28em;
-    margin-right: -0.28em;
+  .logo :global(img) {
+    display: block;
+    height: 40px;
+    width: auto;
   }
-  .logo-sub {
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.42em;
-    color: var(--muted);
+  @media (max-width: 520px) {
+    .logo :global(img) {
+      height: 34px;
+    }
   }
   ul {
     display: flex;

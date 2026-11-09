@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { artistUrl, getContent, sizeLabel, sortedArtists } from "../lib/content";
+import { artistUrl, getContent, groupWorks, sizeLabel, sortedArtists } from "../lib/content";
 import { absoluteUrl, stripHtml } from "../lib/seo";
 
 export const GET: APIRoute = async () => {
@@ -31,7 +31,9 @@ export const GET: APIRoute = async () => {
     lines.push(`## Artist: ${artist.name}`, "", `[${artist.name}](${url})`, "");
     if (artist.origin) lines.push(`${artist.origin}${artist.selfTaught ? " · Self-taught" : ""}`, "");
     lines.push(stripHtml(artist.bioHtml), "", "### Works", "");
-    for (const w of content.artworks.filter((x) => x.artistSlug === artist.slug)) {
+    // Same order as on the site: by format group, then status and order.
+    const works = groupWorks(content.artworks.filter((x) => x.artistSlug === artist.slug));
+    for (const w of works.flatMap((g) => g.units.flat())) {
       const status = w.status === "available" ? "price on request" : w.status;
       lines.push(`- [${w.title}](${url}#${w.slug}): ${w.medium}, ${sizeLabel(w)}, ${status}`);
     }

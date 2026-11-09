@@ -1,0 +1,87 @@
+---
+/**
+ * All works laid out by the rules in BRIEF.md, for any set of works:
+ * square side by side (half width each), tall in one equal-height row with
+ * pairs kept together, landscape stacked at the same width.
+ */
+import WorkImage from "./WorkImage.astro";
+import WorkCaption from "./WorkCaption.astro";
+import TallRow from "./TallRow.astro";
+import { artistOf, groupWorks } from "../lib/content";
+import type { Artwork, Content } from "../lib/types";
+
+interface Props {
+  content: Content;
+  works: Artwork[];
+  showArtist?: boolean;
+}
+
+const { content, works, showArtist = false } = Astro.props;
+const groups = groupWorks(works);
+const titles = { square: "Square works", tall: "Tall works", landscape: "Landscape works" };
+---
+
+<div class="groups">
+  {
+    groups.map((group) => (
+      <section class={`group group-${group.format}`} aria-label={titles[group.format]}>
+        {group.format === "tall" ? (
+          <TallRow content={content} units={group.units} showArtist={showArtist} showStatus />
+        ) : (
+          <ul class="list">
+            {group.units.flat().map((work) => (
+              <li class="item">
+                <WorkImage
+                  work={work}
+                  artistName={artistOf(content, work).name}
+                  sizes={
+                    group.format === "square"
+                      ? "(min-width: 900px) 480px, (min-width: 600px) 46vw, 92vw"
+                      : "(min-width: 980px) 900px, 92vw"
+                  }
+                  widths={group.format === "square" ? [400, 600, 900, 1200] : [600, 900, 1350, 1800]}
+                />
+                <WorkCaption
+                  content={content}
+                  work={work}
+                  artist={artistOf(content, work)}
+                  showArtist={showArtist}
+                  showStatus
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .groups {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(96px, 10vw, 140px);
+  }
+  .list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .group-square .list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 64px 32px;
+  }
+  @media (min-width: 600px) {
+    .group-square .list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .group-landscape .list {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    max-width: 900px;
+  }
+</style>

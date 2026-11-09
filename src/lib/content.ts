@@ -1,7 +1,19 @@
-import { artists, artworks, gallery } from "../data/local";
-import type { Artist, Artwork, Format } from "./types";
+/**
+ * Content access for all pages. Reads from Sanity when SANITY_PROJECT_ID is
+ * set (see src/lib/sanity.ts), otherwise from the local starting content.
+ * Pages only use the functions below, so the source can change without
+ * touching the layout.
+ */
+import { localContent } from "../data/local";
+import { sanityContent, sanityConfigured } from "./sanity";
+import type { Artist, Artwork, Content, Format } from "./types";
 
-export { gallery };
+let cache: Promise<Content> | undefined;
+
+export function getContent(): Promise<Content> {
+  cache ??= sanityConfigured() ? sanityContent() : Promise.resolve(localContent());
+  return cache;
+}
 
 export function formatOf(work: Artwork): Format {
   if (work.format) return work.format;
@@ -15,33 +27,74 @@ export function sizeLabel(work: Artwork): string {
   return `${work.heightCm} × ${work.widthCm} cm`;
 }
 
-export function artistOf(work: Artwork): Artist {
-  const artist = artists.find((a) => a.slug === work.artistSlug);
-  if (!artist) throw new Error(`Unknown artist ${work.artistSlug}`);
-  return artist;
-}
-
-export function artistUrl(artist: Artist): string {
+export function artistUrl(artist: Pick<Artist, "slug">): string {
   return `/artist/${artist.slug}/`;
 }
 
-export function getArtworks(): Artwork[] {
-  return artworks;
+export function artistOf(content: Content, work: Artwork): Artist {
+  const artist = content.artists.find((a) => a.slug === work.artistSlug);
+  if (!artist) throw new Error(`Unknown artist ${work.artistSlug} for ${work.slug}`);
+  return artist;
 }
 
-export function getArtwork(slug: string): Artwork {
-  const work = artworks.find((w) => w.slug === slug);
-  if (!work) throw new Error(`Unknown artwork ${slug}`);
-  return work;
+export function findArtwork(content: Content, slug: string | undefined): Artwork | undefined {
+  return content.artworks.find((w) => w.slug === slug);
 }
 
-export function getFeaturedArtist(): Artist {
-  const first = artists[0];
-  if (!first) throw new Error("No artists");
-  return first;
+export function sortedArtists(content: Content): Artist[] {
+  return [...content.artists].sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
 }
 
-export function enquiryHref(work: Artwork): string {
-  const subject = `Enquiry: ${work.title} by ${artistOf(work).name}`;
-  return `mailto:${gallery.email}?subject=${encodeURIComponent(subject)}`;
+export function enquiryHref(content: Content, work: Artwork): string {
+  const subject = `Enquiry: ${work.title} by ${artistOf(content, work).name}`;
+  return `mailto:${content.gallery.email}?subject=${encodeURIComponent(subject)}`;
+}
+
+export function imageRatio(work: Artwork): number {
+  return work.image.width / work.image.height;
+}
+
+const statusRank = { available: 0, reserved: 1, sold: 2 } as const;
+
+/** Units of one or two works; a pair always forms one unit (side by side). */
+export type Unit = Artwork[];
+
+export interface Group {
+  format: Format;
+  units: Unit[];
+}
+
+/**
+ * Groups works by format (square, tall, landscape) in that order. Within a
+ * group: available first, then reserved, then sold; then by order and title.
+ * A work with a "pair with" partner in the same group is placed next to it.
+ */
+export function groupWorks(works: Artwork[]): Group[] {
+  const formats: Format[] = ["square", "tall", "landscape"];
+  return formats
+    .map((format) => {
+      const list = works
+        .filter((w) => formatOf(w) === format)
+        .sort(
+          (a, b) =>
+            statusRank[a.status] - statusRank[b.status] ||
+            a.order - b.order ||
+            a.title.localeCompare(b.title),
+        );
+      const used = new Set<string>();
+      const units: Unit[] = [];
+      for (const work of list) {
+        if (used.has(work.slug)) continue;
+        used.add(work.slug);
+        const partner = list.find((w) => w.slug === work.pairWith && !used.has(w.slug));
+        if (partner) {
+          used.add(partner.slug);
+          units.push([work, partner]);
+        } else {
+          units.push([work]);
+        }
+      }
+      return { format, units };
+    })
+    .filter((g) => g.units.length > 0);
 }

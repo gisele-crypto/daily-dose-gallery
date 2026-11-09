@@ -1,0 +1,86 @@
+---
+/**
+ * Tall works in one row, all exactly the same height (max 40rem). Each item's
+ * width follows its photo's aspect ratio. When the row gets too narrow
+ * (phone), it wraps; a pair is one unit, so a pair always stays side by side.
+ */
+import WorkImage from "./WorkImage.astro";
+import WorkCaption from "./WorkCaption.astro";
+import { artistOf, imageRatio, type Unit } from "../lib/content";
+import type { Content } from "../lib/types";
+
+interface Props {
+  content: Content;
+  units: Unit[];
+  showArtist?: boolean;
+  showStatus?: boolean;
+  headingLevel?: "h3" | "h4";
+}
+
+const { content, units, showArtist = false, showStatus = false, headingLevel = "h3" } = Astro.props;
+const works = units.flat();
+const sum = works.reduce((s, w) => s + imageRatio(w), 0);
+---
+
+<ul class="tall-row" style={`--n:${works.length};--sum:${sum}`}>
+  {
+    units.map((unit) => (
+      <li class:list={["unit", { pair: unit.length > 1 }]}>
+        {unit.map((work) => (
+          <div class="tall-item" style={`--r:${imageRatio(work)}`}>
+            <WorkImage
+              work={work}
+              artistName={artistOf(content, work).name}
+              sizes="(min-width: 900px) 240px, 30vw"
+              widths={[200, 300, 480]}
+            />
+            <WorkCaption
+              content={content}
+              work={work}
+              artist={artistOf(content, work)}
+              showArtist={showArtist}
+              showStatus={showStatus}
+              headingLevel={headingLevel}
+            />
+          </div>
+        ))}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .tall-row {
+    --gap: 24px;
+    container-type: inline-size;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 48px var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .unit {
+    display: flex;
+    gap: var(--gap);
+  }
+  .tall-item {
+    /* Height that fits the whole row, never above 40rem; on narrow screens
+       never below 21rem, so the row wraps instead of shrinking too far. */
+    --fit: calc((100cqw - (var(--n) - 1) * var(--gap)) / var(--sum));
+    --h: min(40rem, max(var(--fit), 21rem));
+    flex: none;
+    width: calc(var(--h) * var(--r));
+  }
+  @media (max-width: 520px) {
+    .tall-row {
+      --gap: 12px;
+    }
+    .tall-item :global(.title) {
+      font-size: 15px;
+    }
+    .tall-item :global(.caption) {
+      font-size: 13px;
+    }
+  }
+</style>

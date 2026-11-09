@@ -1,0 +1,103 @@
+---
+import Base from "../layouts/Base.astro";
+import WorkImage from "../components/WorkImage.astro";
+import { artistOf, findArtwork, getContent, sizeLabel } from "../lib/content";
+
+const content = await getContent();
+const { sections, imageSlug, closing } = content.pages.about;
+const image = findArtwork(content, imageSlug);
+const [first, ...rest] = sections;
+---
+
+<Base
+  title="About — Art is a daily dose | Daily Dose Gallery"
+  description="Daily Dose Gallery in Blaricum believes art belongs in everyday life. We choose paintings that lift you, calm you and make you feel alive."
+  shareWork={image}
+  breadcrumbs={[{ name: "About", path: "/about/" }]}
+>
+  {
+    first && (
+      <section class="container intro">
+        <div class="split">
+          <p class="label">About</p>
+          <div>
+            <h1 class="statement">{first.statement}</h1>
+            <div class="body text">{first.paragraphs.map((p) => <p>{p}</p>)}</div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    image && (
+      <figure class="container section figure">
+        <div class="split">
+          <div />
+          <div class="figure-inner">
+            <WorkImage
+              work={image}
+              artistName={artistOf(content, image).name}
+              sizes="(min-width: 980px) 900px, 92vw"
+              widths={[600, 900, 1350, 1800]}
+            />
+            <figcaption class="muted">
+              {image.title} · {artistOf(content, image).name} · {image.medium} ·{" "}
+              <span class="nowrap">{sizeLabel(image)}</span>
+            </figcaption>
+          </div>
+        </div>
+      </figure>
+    )
+  }
+
+  {
+    rest.map((section) => (
+      <section class="container section">
+        <div class="split">
+          <div />
+          <div>
+            <h2 class="statement">{section.statement}</h2>
+            <div class="body text">{section.paragraphs.map((p) => <p>{p}</p>)}</div>
+          </div>
+        </div>
+      </section>
+    ))
+  }
+
+  {
+    closing && (
+      <section class="container section">
+        <div class="split">
+          <div />
+          <p class="label closing">{closing}</p>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .intro {
+    padding-top: 24px;
+  }
+  .text {
+    margin-top: 32px;
+  }
+  .figure {
+    margin: 0 auto;
+  }
+  .figure-inner {
+    max-width: 900px;
+  }
+  figcaption {
+    margin-top: 16px;
+    font-size: 15px;
+  }
+  .nowrap {
+    white-space: nowrap;
+  }
+  .closing {
+    font-size: 15px;
+  }
+</style>

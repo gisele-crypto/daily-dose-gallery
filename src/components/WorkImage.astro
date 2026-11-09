@@ -1,27 +1,29 @@
 ---
 import { Picture } from "astro:assets";
-import { artistOf, sizeLabel } from "../lib/content";
+import { sizeLabel } from "../lib/content";
+import { srcProps } from "../lib/image";
 import type { Artwork } from "../lib/types";
 
 interface Props {
   work: Artwork;
+  artistName: string;
   sizes: string;
   widths: number[];
   eager?: boolean;
 }
 
-const { work, sizes, widths, eager = false } = Astro.props;
-const artist = artistOf(work);
+const { work, artistName, sizes, widths, eager = false } = Astro.props;
 const alt = work.placeholder
-  ? `Photo of ${work.title} by ${artist.name} to follow`
-  : `${work.title} by ${artist.name}, ${work.medium.toLowerCase()}, ${sizeLabel(work)}`;
+  ? `Photo of ${work.title} by ${artistName} to follow`
+  : `${work.title} by ${artistName}, ${work.medium.toLowerCase()}, ${sizeLabel(work)}`;
+// Never generate sizes larger than the original photo.
 const usable = widths.filter((w) => w <= work.image.width);
 const finalWidths = usable.length ? usable : [work.image.width];
 ---
 
-<div class:list={["work-media", { "is-placeholder": work.placeholder }]}>
+<div class:list={["work-media", { "is-placeholder": work.placeholder }]} id={work.slug}>
   <Picture
-    src={work.image}
+    {...srcProps(work.image)}
     alt={alt}
     formats={["avif"]}
     fallbackFormat="webp"
@@ -35,6 +37,7 @@ const finalWidths = usable.length ? usable : [work.image.width];
 <style>
   .work-media {
     position: relative;
+    scroll-margin-top: 24px;
   }
   .work-media :global(img) {
     width: 100%;

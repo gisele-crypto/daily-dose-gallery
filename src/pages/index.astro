@@ -4,25 +4,46 @@ import Base from "../layouts/Base.astro";
 import Newsletter from "../components/Newsletter.astro";
 import WorkImage from "../components/WorkImage.astro";
 import WorkCaption from "../components/WorkCaption.astro";
-import { artistOf, artistUrl, formatOf, getArtwork, getArtworks, sizeLabel } from "../lib/content";
+import TallRow from "../components/TallRow.astro";
+import {
+  artistOf,
+  artistUrl,
+  findArtwork,
+  formatOf,
+  getContent,
+  groupWorks,
+  sizeLabel,
+} from "../lib/content";
+import { srcProps } from "../lib/image";
 
-const hero = getArtwork("distance");
-const heroArtist = artistOf(hero);
-const featured = getArtworks().filter((w) => w.featuredOnHome);
-const tall = featured.filter((w) => formatOf(w) === "tall").sort((a, b) => a.order - b.order);
+const content = await getContent();
+const hero = findArtwork(content, content.pages.hero.artworkSlug) ?? content.artworks[0];
+if (!hero) throw new Error("No artworks");
+const heroArtist = artistOf(content, hero);
+
+const featured = content.artworks.filter((w) => w.featuredOnHome);
+const tallUnits = groupWorks(featured.filter((w) => formatOf(w) === "tall"))[0]?.units ?? [];
 const large = featured.filter((w) => formatOf(w) !== "tall");
 
+// Wide 16:8 crop of the hero painting, centred on its hotspot when set.
 const heroSizes = "(min-width: 1440px) 1325px, 92vw";
-const heroWidths = [640, 960, 1120].filter((w) => w <= hero.image.width);
-const heroOpts = { src: hero.image, width: 1120, height: 560, fit: "cover" as const, widths: heroWidths };
+const heroWidths = [640, 960, 1280, 1600].filter((w) => w <= hero.image.width);
+const heroOpts = {
+  ...srcProps(hero.image),
+  width: Math.min(1600, hero.image.width),
+  height: Math.round(Math.min(1600, hero.image.width) / 2),
+  fit: "cover" as const,
+  position: hero.focus ?? "center",
+  widths: heroWidths.length ? heroWidths : [hero.image.width],
+};
 const heroPreload = await getImage({ ...heroOpts, format: "avif" });
-
-const ratioSum = tall.reduce((s, w) => s + w.image.width / w.image.height, 0);
+const about = content.pages.about.sections[0];
 ---
 
 <Base
   title="Daily Dose Gallery — Contemporary paintings in Blaricum, the Netherlands"
   description="Daily Dose Gallery in Blaricum, Het Gooi: contemporary paintings by Julián Villafañe. View the work online or visit us on Tuesday and Thursday."
+  shareWork={hero}
   preload={{ srcset: heroPreload.srcSet.attribute, sizes: heroSizes, type: "image/avif" }}
 >
   <section class="container hero" aria-labelledby="featured-artist">
@@ -38,10 +59,12 @@ const ratioSum = tall.reduce((s, w) => s + w.image.width / w.image.height, 0);
       />
     </a>
     <div class="split hero-text">
-      <p class="label">Featured artist</p>
+      <p class="label">{content.pages.hero.label}</p>
       <div>
         <h1 class="statement" id="featured-artist">{heroArtist.name}</h1>
-        <p class="hero-meta muted">{hero.title} · {hero.medium} · {sizeLabel(hero)}</p>
+        <p class="hero-meta muted">
+          {hero.title} · {hero.medium} · <span class="nowrap">{sizeLabel(hero)}</span>
+        </p>
         <a class="link" href={artistUrl(heroArtist)}>View artist</a>
       </div>
     </div>
@@ -51,52 +74,42 @@ const ratioSum = tall.reduce((s, w) => s + w.image.width / w.image.height, 0);
     <div class="split">
       <h2 class="label" id="art-label">Art</h2>
       <div>
-        <ul class="tall-row" style={`--n:${tall.length};--sum:${ratioSum}`}>
-          {
-            tall.map((work) => (
-              <li class="tall-item" style={`--r:${work.image.width / work.image.height}`}>
-                <WorkImage work={work} sizes="(min-width: 900px) 260px, 30vw" widths={[200, 300, 420]} />
-                <WorkCaption work={work} />
-              </li>
-            ))
-          }
-        </ul>
-
-        <hr class="rule divider" />
-
+        {tallUnits.length > 0 && <TallRow content={content} units={tallUnits} />}
+        {tallUnits.length > 0 && large.length > 0 && <hr class="rule divider" />}
         {
           large.map((work) => (
             <div class="large">
-              <WorkImage work={work} sizes="(min-width: 900px) 640px, 92vw" widths={[480, 640, 960, 1280]} />
-              <WorkCaption work={work} />
+              <WorkImage
+                work={work}
+                artistName={artistOf(content, work).name}
+                sizes="(min-width: 900px) 640px, 92vw"
+                widths={[480, 640, 960, 1280]}
+              />
+              <WorkCaption content={content} work={work} artist={artistOf(content, work)} />
             </div>
           ))
         }
-
         <a class="link all-works" href="/art/">All works</a>
       </div>
     </div>
   </section>
 
-  <section class="container section" aria-labelledby="about-label">
-    <div class="split">
-      <h2 class="label" id="about-label">About</h2>
-      <div>
-        <p class="statement">Art is a daily dose.</p>
-        <div class="body about-text">
-          <p>
-            Daily Dose Gallery is built on one belief: art belongs in everyday life. Every morning,
-            every evening, every time you walk past it.
-          </p>
-          <p>
-            We choose work that does something to you. Work that lifts you, calms you and makes you
-            feel alive. A painting on your wall is a dose of joy you take every single day.
-          </p>
+  {
+    about && (
+      <section class="container section" aria-labelledby="about-label">
+        <div class="split">
+          <h2 class="label" id="about-label">About</h2>
+          <div>
+            <p class="statement">{about.statement}</p>
+            <div class="body about-text">
+              {about.paragraphs.map((p) => <p>{p}</p>)}
+            </div>
+            <a class="link" href="/about/">Read more</a>
+          </div>
         </div>
-        <a class="link" href="/about/">Read more</a>
-      </div>
-    </div>
-  </section>
+      </section>
+    )
+  }
 
   <Newsletter />
 </Base>
@@ -121,36 +134,14 @@ const ratioSum = tall.reduce((s, w) => s + w.image.width / w.image.height, 0);
     margin: 12px 0 8px;
     font-size: 15px;
   }
-
-  /* Tall works: one row, all the same height. Each item's width follows its
-     aspect ratio (--r), the shared height fits the row but never exceeds 40rem. */
-  .tall-row {
-    container-type: inline-size;
-    display: flex;
-    gap: var(--gap);
-    margin: 0;
-    padding: 0;
-    list-style: none;
+  .nowrap {
+    white-space: nowrap;
   }
-  .tall-item {
-    --h: min(40rem, (100cqw - (var(--n) - 1) * var(--gap)) / var(--sum));
-    flex: none;
-    width: calc(var(--h) * var(--r));
-  }
-  @media (max-width: 520px) {
-    .tall-row {
-      --gap: 12px;
-    }
-    .tall-item :global(.title) {
-      font-size: 15px;
-    }
-    .tall-item :global(.caption) {
-      font-size: 13px;
-    }
-  }
-
   .divider {
     margin: 64px 0;
+  }
+  .large + .large {
+    margin-top: 64px;
   }
   .large {
     display: grid;

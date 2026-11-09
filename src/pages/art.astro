@@ -1,0 +1,43 @@
+---
+import Base from "../layouts/Base.astro";
+import WorkGroups from "../components/WorkGroups.astro";
+import { artworkJsonLd } from "../lib/seo";
+import { getContent } from "../lib/content";
+
+const content = await getContent();
+const works = content.artworks;
+const count = works.length;
+const jsonLd = await Promise.all(works.map((w) => artworkJsonLd(content, w)));
+const names = [...new Set(content.artists.map((a) => a.name))].join(", ");
+---
+
+<Base
+  title="Art — Paintings for sale | Daily Dose Gallery"
+  description={`All ${count} paintings at Daily Dose Gallery in Blaricum, by ${names}. Oil on canvas, prices on request. Enquire by email or visit the gallery.`}
+  breadcrumbs={[{ name: "Art", path: "/art/" }]}
+  jsonLd={jsonLd}
+>
+  <div class="container page-head">
+    <div class="split">
+      <h1 class="label">Art</h1>
+      <p class="count">{count} {count === 1 ? "work" : "works"} · Prices on request</p>
+    </div>
+  </div>
+
+  <div class="container works">
+    <WorkGroups content={content} works={works} showArtist />
+  </div>
+</Base>
+
+<style>
+  .works {
+    padding-top: 64px;
+  }
+  .page-head {
+    padding-top: 24px;
+  }
+  .count {
+    font-size: 19px;
+    color: var(--body);
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import Newsletter from "../components/Newsletter.astro";
+import { getContent } from "../lib/content";
+import { srcProps } from "../lib/image";
+
+const content = await getContent();
+const { gallery } = content;
+const c = content.pages.contact;
+---
+
+<Base
+  title="Contact — Visit the gallery in Blaricum | Daily Dose Gallery"
+  description="Visit Daily Dose Gallery at Meentweg 37 B in Blaricum, Het Gooi. Open Tuesday and Thursday 10:00–16:00, other days by appointment."
+  breadcrumbs={[{ name: "Contact", path: "/contact/" }]}
+>
+  <h1 class="visually-hidden">Contact Daily Dose Gallery</h1>
+
+  {
+    c.spacePhotos.length > 0 && (
+      <section class="container" aria-label="The gallery space">
+        <div class="photos">
+          {c.spacePhotos.map((photo) => (
+            <figure style={`--photo-max:${photo.image.width}px`}>
+              <Picture
+                {...srcProps(photo.image)}
+                formats={["avif"]}
+                fallbackFormat="webp"
+                widths={[400, 600, 900, 1200].filter((w) => w <= photo.image.width)}
+                sizes="(min-width: 768px) 46vw, 92vw"
+                alt={photo.alt}
+                loading="eager"
+              />
+              {photo.caption && <figcaption class="muted">{photo.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="container section details">
+    <div>
+      <h2 class="label">Address</h2>
+      <address class="body">
+        {gallery.street}<br />
+        {gallery.postalCode} {gallery.city}<br />
+        {gallery.country}
+      </address>
+    </div>
+    <div>
+      <h2 class="label">Opening hours</h2>
+      <p class="body">{gallery.openingHours}</p>
+    </div>
+    <div>
+      <h2 class="label">Contact</h2>
+      <p class="body"><a class="mail" href={`mailto:${gallery.email}`}>{gallery.email}</a></p>
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="appointment-label">
+    <div class="split">
+      <h2 class="label" id="appointment-label">{c.appointmentLabel}</h2>
+      <div>
+        <p class="statement">{c.appointmentStatement}</p>
+        <p class="body text">{c.appointmentText}</p>
+        <a class="button" href={`mailto:${gallery.email}`}>{c.buttonLabel}</a>
+      </div>
+    </div>
+  </section>
+
+  <Newsletter />
+</Base>
+
+<style>
+  .photos {
+    display: grid;
+    gap: 24px;
+  }
+  @media (min-width: 768px) {
+    .photos {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  figure {
+    margin: 0;
+  }
+  /* The current photos are 600 × 400: never stretch them beyond that. */
+  .photos :global(img) {
+    width: 100%;
+    max-width: var(--photo-max, 600px);
+    height: auto;
+  }
+  figcaption {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+  .details {
+    display: grid;
+    gap: 40px 32px;
+  }
+  @media (min-width: 768px) {
+    .details {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .details .body {
+    margin-top: 16px;
+  }
+  .mail {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    overflow-wrap: anywhere;
+  }
+  .mail:hover {
+    color: var(--muted);
+  }
+  .text {
+    margin: 24px 0 32px;
+  }
+</style>

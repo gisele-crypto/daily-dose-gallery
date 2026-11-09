@@ -1,5 +1,10 @@
 ---
-import { gallery } from "../lib/content";
+import type { Content } from "../lib/types";
+
+interface Props {
+  content: Content;
+}
+const { gallery } = Astro.props.content;
 const year = new Date().getFullYear();
 ---
 
@@ -8,7 +13,7 @@ const year = new Date().getFullYear();
     <hr class="rule" />
     <ul>
       <li class="name">DAILY DOSE GALLERY</li>
-      <li><a href={gallery.instagram} rel="me noopener">Instagram</a></li>
+      {gallery.instagram && <li><a href={gallery.instagram} rel="me noopener">Instagram</a></li>}
       <li><a href={`mailto:${gallery.email}`}>{gallery.email}</a></li>
       <li><a href="/privacy/">Privacy</a></li>
       <li>{gallery.street}, {gallery.city}</li>

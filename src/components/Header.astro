@@ -1,11 +1,18 @@
 ---
-import { artistUrl, getFeaturedArtist } from "../lib/content";
+import { artistUrl, sortedArtists } from "../lib/content";
+import type { Content } from "../lib/types";
 
-// While there is one artist, ARTIST goes straight to their page.
-const artist = getFeaturedArtist();
+interface Props {
+  content: Content;
+}
+
+const artists = sortedArtists(Astro.props.content);
+// With one artist, ARTIST goes straight to their page. With more artists it
+// goes to the first one for now; an /artists/ overview can be added later.
+const first = artists[0];
 const items = [
   { label: "Art", href: "/art/", match: "/art/" },
-  { label: "Artist", href: artistUrl(artist), match: "/artist/" },
+  ...(first ? [{ label: "Artist", href: artistUrl(first), match: "/artist/" }] : []),
   { label: "About", href: "/about/", match: "/about/" },
   { label: "Contact", href: "/contact/", match: "/contact/" },
 ];
@@ -21,16 +28,13 @@ const path = Astro.url.pathname;
     <nav aria-label="Main">
       <ul>
         {
-          items.map((item) => {
-            const active = path.startsWith(item.match);
-            return (
-              <li>
-                <a href={item.href} aria-current={active ? "page" : undefined}>
-                  {item.label}
-                </a>
-              </li>
-            );
-          })
+          items.map((item) => (
+            <li>
+              <a href={item.href} aria-current={path.startsWith(item.match) ? "page" : undefined}>
+                {item.label}
+              </a>
+            </li>
+          ))
         }
       </ul>
     </nav>

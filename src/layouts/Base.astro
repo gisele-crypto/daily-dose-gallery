@@ -3,40 +3,41 @@ import "@fontsource/inter-tight/400.css";
 import "@fontsource/inter-tight/500.css";
 import "@fontsource/inter-tight/600.css";
 import "../styles/global.css";
-import { getImage } from "astro:assets";
-import type { ImageMetadata } from "astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import { absoluteUrl, breadcrumbJsonLd, galleryJsonLd, type Crumb } from "../lib/seo";
-import { getArtwork } from "../lib/content";
+import { artistOf, findArtwork, getContent } from "../lib/content";
+import {
+  absoluteUrl,
+  breadcrumbJsonLd,
+  galleryJsonLd,
+  shareImageUrl,
+  type Crumb,
+} from "../lib/seo";
+import type { Artwork } from "../lib/types";
 
 interface Props {
   title: string;
   description: string;
-  /** Share image; defaults to Distance. */
-  shareImage?: ImageMetadata;
-  shareAlt?: string;
+  /** Painting used as share image; defaults to the home hero. */
+  shareWork?: Artwork | undefined;
+  /** Breadcrumbs after Home, e.g. [{ name: "Art", path: "/art/" }]. */
   breadcrumbs?: Crumb[];
   jsonLd?: object[];
   /** Image to preload (hero). */
   preload?: { srcset: string; sizes: string; type: string } | undefined;
+  noindex?: boolean;
 }
 
-const { title, description, breadcrumbs, jsonLd = [], preload } = Astro.props;
-const fallback = getArtwork("distance");
-const share = await getImage({
-  src: Astro.props.shareImage ?? fallback.image,
-  width: 1200,
-  height: 630,
-  fit: "cover",
-  format: "jpg",
-});
-const shareAlt = Astro.props.shareAlt ?? `${fallback.title}, oil on canvas, by Julián Villafañe`;
+const { title, description, breadcrumbs, jsonLd = [], preload, noindex = false } = Astro.props;
+const content = await getContent();
+const share =
+  Astro.props.shareWork ?? findArtwork(content, content.pages.hero.artworkSlug) ?? content.artworks[0];
+const shareUrl = share && !share.placeholder ? await shareImageUrl(share.image, true) : undefined;
+const shareAlt = share ? `${share.title} by ${artistOf(content, share).name}, ${share.medium.toLowerCase()}` : "";
 const canonical = absoluteUrl(Astro.url.pathname);
-const shareUrl = absoluteUrl(share.src);
 const structured = [
-  galleryJsonLd(),
-  ...(breadcrumbs ? [breadcrumbJsonLd(breadcrumbs)] : []),
+  galleryJsonLd(content.gallery),
+  ...(breadcrumbs ? [breadcrumbJsonLd([{ name: "Home", path: "/" }, ...breadcrumbs])] : []),
   ...jsonLd,
 ];
 ---
@@ -48,6 +49,7 @@ const structured = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {
@@ -64,29 +66,41 @@ const structured = [
     }
 
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Daily Dose Gallery" />
+    <meta property="og:site_name" content={content.gallery.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
-    <meta property="og:image" content={shareUrl} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={shareAlt} />
     <meta property="og:locale" content="en_GB" />
+    {
+      shareUrl && (
+        <>
+          <meta property="og:image" content={shareUrl} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+          <meta property="og:image:alt" content={shareAlt} />
+        </>
+      )
+    }
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={shareUrl} />
-    <meta name="twitter:image:alt" content={shareAlt} />
+    {
+      shareUrl && (
+        <>
+          <meta name="twitter:image" content={shareUrl} />
+          <meta name="twitter:image:alt" content={shareAlt} />
+        </>
+      )
+    }
 
     {structured.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <Header />
+    <Header content={content} />
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    <Footer content={content} />
   </body>
 </html>

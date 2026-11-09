@@ -1,32 +1,36 @@
 ---
-import { artistOf, artistUrl, enquiryHref, sizeLabel } from "../lib/content";
-import type { Artwork } from "../lib/types";
+import { artistUrl, enquiryHref, sizeLabel } from "../lib/content";
+import type { Artist, Artwork, Content } from "../lib/types";
 
 interface Props {
+  content: Content;
   work: Artwork;
+  artist: Artist;
   /** Show the artist name as a link (Art page). */
   showArtist?: boolean;
   /** Show price line and ENQUIRE (Art and Artist pages). */
   showStatus?: boolean;
-  headingLevel?: "h2" | "h3";
+  headingLevel?: "h2" | "h3" | "h4";
 }
 
-const { work, showArtist = false, showStatus = false, headingLevel = "h3" } = Astro.props;
+const { content, work, artist, showArtist = false, showStatus = false, headingLevel = "h3" } =
+  Astro.props;
 const Heading = headingLevel;
-const artist = artistOf(work);
 ---
 
 <div class="caption">
   <Heading class="title">{work.title}</Heading>
   {showArtist && <a class="artist" href={artistUrl(artist)}>{artist.name}</a>}
-  <p class="meta">{work.medium} · {sizeLabel(work)}</p>
+  <p class="meta">
+    {work.medium} · <span class="nowrap">{sizeLabel(work)}</span>{work.year && <> · {work.year}</>}
+  </p>
   {
     showStatus && (
       <div class="status">
         {work.status === "available" && (
           <>
             <span>Price on request</span>
-            <a class="enquire" href={enquiryHref(work)}>
+            <a class="enquire" href={enquiryHref(content, work)}>
               Enquire<span class="visually-hidden"> about {work.title}</span>
             </a>
           </>
@@ -67,6 +71,9 @@ const artist = artistOf(work);
   .meta {
     margin-top: 4px;
     color: var(--muted);
+  }
+  .nowrap {
+    white-space: nowrap;
   }
   .status {
     display: flex;

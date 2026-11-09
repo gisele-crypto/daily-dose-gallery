@@ -1,0 +1,57 @@
+---
+import Base from "../layouts/Base.astro";
+import { getContent } from "../lib/content";
+
+const content = await getContent();
+const html = content.pages.privacyHtml;
+---
+
+<Base
+  title="Privacy statement | Daily Dose Gallery"
+  description="Privacy statement of Daily Dose Gallery, Blaricum: how we handle your personal data when you email us or sign up for the newsletter."
+  breadcrumbs={[{ name: "Privacy", path: "/privacy/" }]}
+>
+  <section class="container intro">
+    <div class="split">
+      <p class="label">Privacy</p>
+      <div>
+        <h1 class="statement">Privacy statement</h1>
+        {
+          html ? (
+            <div class="body text" set:html={html} />
+          ) : (
+            <p class="body text">
+              Our privacy statement will be published here shortly. For questions about your
+              personal data, email <a class="mail" href={`mailto:${content.gallery.email}`}>{content.gallery.email}</a>.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro {
+    padding-top: 24px;
+  }
+  .text {
+    margin-top: 32px;
+  }
+  .text :global(p + p),
+  .text :global(h2),
+  .text :global(ul) {
+    margin-top: 1em;
+  }
+  .text :global(h2) {
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .mail,
+  .text :global(a) {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+</style>

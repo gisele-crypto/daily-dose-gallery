@@ -1,0 +1,182 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../../layouts/Base.astro";
+import WorkGroups from "../../components/WorkGroups.astro";
+import { artistUrl, getContent } from "../../lib/content";
+import { srcProps } from "../../lib/image";
+import { artworkJsonLd, personJsonLd, shareImageUrl, stripHtml } from "../../lib/seo";
+import type { Artist } from "../../lib/types";
+
+export async function getStaticPaths() {
+  const content = await getContent();
+  return content.artists.map((artist) => ({ params: { slug: artist.slug }, props: { artist } }));
+}
+
+interface Props {
+  artist: Artist;
+}
+
+const { artist } = Astro.props;
+const content = await getContent();
+const works = content.artworks.filter((w) => w.artistSlug === artist.slug);
+const bioText = stripHtml(artist.bioHtml);
+const portraitUrl = artist.portrait ? await shareImageUrl(artist.portrait) : undefined;
+const jsonLd = [
+  personJsonLd(artist, bioText, portraitUrl),
+  ...(await Promise.all(works.map((w) => artworkJsonLd(content, w)))),
+];
+const lines = [artist.origin, artist.selfTaught ? "Self-taught" : ""].filter(Boolean);
+const shareWork = works.find((w) => !w.placeholder);
+const description =
+  bioText.length > 155 ? `${bioText.slice(0, bioText.lastIndexOf(" ", 150))}…` : bioText;
+---
+
+<Base
+  title={`${artist.name} — Paintings | Daily Dose Gallery`}
+  description={description}
+  shareWork={shareWork}
+  breadcrumbs={[{ name: artist.name, path: artistUrl(artist) }]}
+  jsonLd={jsonLd}
+>
+  <section class="container intro">
+    <div class="intro-grid">
+      <div class="portrait">
+        {
+          artist.portrait ? (
+            <Picture
+              {...srcProps(artist.portrait)}
+              width={Math.min(900, artist.portrait.width)}
+              height={Math.min(900, artist.portrait.width)}
+              fit="cover"
+              formats={["avif"]}
+              fallbackFormat="webp"
+              widths={[400, 600, 900].filter((w) => w <= (artist.portrait?.width ?? 0))}
+              sizes="(min-width: 900px) 40vw, 92vw"
+              alt={`Portrait of ${artist.name}`}
+              loading="eager"
+            />
+          ) : (
+            <div class="portrait-placeholder">Portrait to follow</div>
+          )
+        }
+      </div>
+      <div class="text">
+        <p class="label">Artist</p>
+        <h1 class="statement name">{artist.name}</h1>
+        {lines.length > 0 && <p class="muted origin">{lines.join(" · ")}</p>}
+        <div class="body bio" set:html={artist.bioHtml} />
+        {works.length > 0 && <a class="link" href="#works">View works</a>}
+      </div>
+    </div>
+  </section>
+
+  {
+    works.length > 0 && (
+      <section class="container section" id="works" aria-labelledby="works-label">
+        <h2 class="label works-label" id="works-label">Works</h2>
+        <WorkGroups content={content} works={works} />
+      </section>
+    )
+  }
+
+  {
+    artist.exhibitions.length > 0 && (
+      <section class="container section" aria-labelledby="exhibitions-label">
+        <div class="split">
+          <h2 class="label" id="exhibitions-label">Exhibitions</h2>
+          <ul class="exhibitions">
+            {artist.exhibitions.map((e) => (
+              <li>
+                <span>{e.title}</span>
+                <span class="muted">{e.period}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    artist.quote && (
+      <section class="container section" aria-labelledby="quote-label">
+        <div class="split">
+          <h2 class="label" id="quote-label">In their words</h2>
+          <blockquote class="statement quote">{artist.quote}</blockquote>
+        </div>
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .intro {
+    padding-top: 24px;
+  }
+  .intro-grid {
+    display: grid;
+    gap: 40px;
+  }
+  @media (min-width: 900px) {
+    .intro-grid {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 64px;
+      align-items: start;
+    }
+  }
+  .portrait :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+  .portrait-placeholder {
+    aspect-ratio: 1;
+    background: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .name {
+    margin-top: 16px;
+  }
+  .origin {
+    margin-top: 12px;
+    font-size: 15px;
+  }
+  .bio {
+    margin: 32px 0 16px;
+  }
+  .bio :global(p + p) {
+    margin-top: 1em;
+  }
+  .works-label {
+    margin-bottom: 48px;
+  }
+  .exhibitions {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    max-width: 760px;
+    font-size: 19px;
+    color: var(--body);
+  }
+  .exhibitions li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 24px;
+    padding: 16px 0;
+    border-top: 1px solid var(--line);
+  }
+  .exhibitions li:last-child {
+    border-bottom: 1px solid var(--line);
+  }
+  .quote {
+    margin: 0;
+  }
+</style>

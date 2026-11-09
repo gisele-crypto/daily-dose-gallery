@@ -1,9 +1,10 @@
 ---
 /**
  * Newsletter signup. Posts to /api/subscribe (netlify/functions/subscribe.mjs),
- * which adds the address to the Laposta list with double opt-in.
- * With JavaScript the answer appears in place; without it the visitor lands
- * on /newsletter/thank-you/ or /newsletter/error/. No cookies or tracking.
+ * which adds the address to the Laposta list (active at once; double opt-in
+ * when LAPOSTA_DOUBLE_OPTIN=true). With JavaScript the answer appears in place;
+ * without it the visitor lands on /newsletter/thank-you/ (or /confirm/) or
+ * /newsletter/error/. No cookies or tracking.
  */
 import { getContent } from "../lib/content";
 
@@ -31,6 +32,10 @@ const { gallery } = await getContent();
           <input id="newsletter-website" name="website" type="text" tabindex="-1" autocomplete="off" />
         </div>
         <button class="button" type="submit">Subscribe</button>
+        <p class="consent">
+          By subscribing you agree to receive our newsletter. Unsubscribe at any time.{" "}
+          <a href="/privacy/">Privacy</a>
+        </p>
       </form>
       <p
         id="newsletter-message"
@@ -47,7 +52,8 @@ const { gallery } = await getContent();
 
 <script>
   const messages = {
-    ok: "Thank you. Check your inbox to confirm.",
+    ok: "Thank you. You're on the list.",
+    confirm: "Thank you. Check your inbox to confirm.",
     invalid: "Please enter a valid email address.",
     unavailable: "Sorry, something went wrong. Please try again later.",
   };
@@ -81,7 +87,7 @@ const { gallery } = await getContent();
         const data = await response.json().catch(() => ({ ok: false, reason: "unavailable" }));
         if (data.ok) {
           form.hidden = true;
-          show(messages.ok, false);
+          show(data.confirm ? messages.confirm : messages.ok, false);
           message.classList.add("is-done");
           message.setAttribute("tabindex", "-1");
           message.focus();
@@ -122,6 +128,25 @@ const { gallery } = await getContent();
   }
   input[type="email"]:focus-visible {
     outline-offset: 4px;
+  }
+  .consent {
+    flex-basis: 100%;
+    margin: 4px 0 0;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .consent a {
+    display: inline-block;
+    padding: 12px 0;
+    margin: -12px 0;
+    color: var(--text);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+  .consent a:hover {
+    color: var(--muted);
   }
   .form[hidden] {
     display: none;

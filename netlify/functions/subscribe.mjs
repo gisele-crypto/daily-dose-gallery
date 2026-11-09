@@ -1,14 +1,21 @@
 /**
  * Newsletter signup → Laposta (POST /api/subscribe).
  *
- * The email address is added to the Laposta list with the list's own double
- * opt-in: Laposta sends the confirmation email, and the address only becomes
- * active after the subscriber clicks the link (GDPR/AVG). We never pass
- * ignore_doubleoptin.
+ * Default (free Laposta account, no confirmation email): the address is added
+ * as active at once, with options[ignore_doubleoptin]=true. Someone who
+ * unsubscribed earlier and signs up again is reactivated (options[upsert]).
+ * Consent: the line under the form ("By subscribing you agree to receive our
+ * newsletter. Unsubscribe at any time.") and submitting it; every newsletter
+ * from Laposta carries an unsubscribe link.
+ *
+ * With a paid account the list's double opt-in can be used instead: set
+ * LAPOSTA_DOUBLE_OPTIN=true. Laposta then sends a confirmation email and the
+ * site says "Check your inbox to confirm."
  *
  * Netlify environment variables (never in code):
- *   LAPOSTA_API_KEY   API key from Laposta (Account → Koppelingen → API)
- *   LAPOSTA_LIST_ID   id of the newsletter list (Lijsten → list → Kenmerken)
+ *   LAPOSTA_API_KEY        API key from Laposta (Account → Koppelingen → API)
+ *   LAPOSTA_LIST_ID        id of the newsletter list
+ *   LAPOSTA_DOUBLE_OPTIN   optional, "true" to use the list's double opt-in
  *
  * Responds with JSON when the form is sent by script (Accept: application/json),
  * otherwise redirects to a thank-you or error page (works without JavaScript).
@@ -24,7 +31,11 @@ export function result(req, status, body) {
       headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
     });
   }
-  const page = body.ok ? "/newsletter/thank-you/" : `/newsletter/error/?reason=${body.reason}`;
+  const page = body.ok
+    ? body.confirm
+      ? "/newsletter/confirm/"
+      : "/newsletter/thank-you/"
+    : `/newsletter/error/?reason=${body.reason}`;
   return new Response(null, { status: 303, headers: { Location: page } });
 }
 
@@ -32,6 +43,10 @@ export default async function handler(req, context) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: { Allow: "POST" } });
   }
+
+  const env = (name) => globalThis.Netlify?.env.get(name) ?? process.env[name];
+  const doubleOptIn = env("LAPOSTA_DOUBLE_OPTIN") === "true";
+  const done = { ok: true, confirm: doubleOptIn };
 
   let form;
   try {
@@ -42,7 +57,7 @@ export default async function handler(req, context) {
 
   // Honeypot: real visitors never fill this hidden field.
   if (String(form.get("website") ?? "").trim() !== "") {
-    return result(req, 200, { ok: true });
+    return result(req, 200, done);
   }
 
   const email = String(form.get("email") ?? "").trim().toLowerCase();
@@ -50,7 +65,6 @@ export default async function handler(req, context) {
     return result(req, 400, { ok: false, reason: "invalid" });
   }
 
-  const env = (name) => globalThis.Netlify?.env.get(name) ?? process.env[name];
   const apiKey = env("LAPOSTA_API_KEY");
   const listId = env("LAPOSTA_LIST_ID");
   if (!apiKey || !listId) {
@@ -64,6 +78,12 @@ export default async function handler(req, context) {
     ip: context?.ip || req.headers.get("x-nf-client-connection-ip") || "0.0.0.0",
     source_url: req.headers.get("referer") || "https://www.dailydosegallery.com/",
   });
+  if (!doubleOptIn) {
+    // Free account: no confirmation email, so the subscriber is active at once.
+    body.set("options[ignore_doubleoptin]", "true");
+    // Re-subscribing after unsubscribing makes the address active again.
+    body.set("options[upsert]", "true");
+  }
 
   let response;
   try {
@@ -80,13 +100,19 @@ export default async function handler(req, context) {
     return result(req, 502, { ok: false, reason: "unavailable" });
   }
 
-  if (response.ok) return result(req, 200, { ok: true });
+  if (response.ok) {
+    // Logged without the address, so the state can be checked in Netlify's
+    // function log: "active" (or "unconfirmed" with double opt-in).
+    const data = await response.json().catch(() => ({}));
+    console.log("[subscribe] Laposta member state:", data?.member?.state ?? "unknown");
+    return result(req, 200, done);
+  }
 
   const data = await response.json().catch(() => ({}));
   const err = data?.error ?? {};
   // 204: address already on the list. Answer the same as a new signup, so the
   // form never reveals who is subscribed.
-  if (err.code === 204) return result(req, 200, { ok: true });
+  if (err.code === 204) return result(req, 200, done);
   if (err.parameter === "email") return result(req, 400, { ok: false, reason: "invalid" });
 
   console.error("[subscribe] Laposta error", response.status, err.code, err.message);

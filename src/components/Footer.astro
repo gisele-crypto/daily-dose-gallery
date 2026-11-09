@@ -1,0 +1,51 @@
+---
+import { gallery } from "../lib/content";
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <hr class="rule" />
+    <ul>
+      <li class="name">DAILY DOSE GALLERY</li>
+      <li><a href={gallery.instagram} rel="me noopener">Instagram</a></li>
+      <li><a href={`mailto:${gallery.email}`}>{gallery.email}</a></li>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li>{gallery.street}, {gallery.city}</li>
+      <li>KvK {gallery.kvk}</li>
+      <li>BTW {gallery.btw}</li>
+      <li>© {year}</li>
+    </ul>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--section);
+    padding-bottom: 40px;
+  }
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin: 0;
+    padding: 28px 0 0;
+    list-style: none;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .name {
+    color: var(--text);
+    font-weight: 600;
+    letter-spacing: 0.16em;
+  }
+  a {
+    display: inline-block;
+    padding: 12px 0;
+    margin: -12px 0;
+    transition: color 0.15s;
+  }
+  a:hover {
+    color: var(--text);
+  }
+</style>

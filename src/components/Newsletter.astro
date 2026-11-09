@@ -1,0 +1,61 @@
+---
+/**
+ * Newsletter signup.
+ *
+ * INTEGRATION POINT: set NEWSLETTER_ACTION to the form endpoint of the mailing
+ * service (e.g. Mailchimp or Laposta) and rename the email field if the service
+ * needs another name. No cookies or tracking are added by this form.
+ */
+const NEWSLETTER_ACTION = "";
+---
+
+<section class="container section" aria-labelledby="newsletter-label">
+  <div class="split">
+    <h2 class="label" id="newsletter-label">Newsletter</h2>
+    <form
+      class="form"
+      method="post"
+      action={NEWSLETTER_ACTION || undefined}
+      data-newsletter
+    >
+      <label for="newsletter-email" class="visually-hidden">Email address</label>
+      <input
+        id="newsletter-email"
+        name="email"
+        type="email"
+        autocomplete="email"
+        placeholder="Email address"
+        required
+      />
+      <button class="button" type="submit">Subscribe</button>
+    </form>
+  </div>
+</section>
+
+<style>
+  .form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    max-width: 760px;
+  }
+  input {
+    flex: 1 1 260px;
+    min-height: 44px;
+    padding: 0 0 0 2px;
+    border: 0;
+    border-bottom: 1px solid var(--text);
+    border-radius: 0;
+    background: transparent;
+    font-family: inherit;
+    font-size: 19px;
+    color: var(--text);
+  }
+  input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+  input:focus-visible {
+    outline-offset: 4px;
+  }
+</style>

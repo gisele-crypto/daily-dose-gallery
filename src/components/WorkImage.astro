@@ -1,0 +1,57 @@
+---
+import { Picture } from "astro:assets";
+import { artistOf, sizeLabel } from "../lib/content";
+import type { Artwork } from "../lib/types";
+
+interface Props {
+  work: Artwork;
+  sizes: string;
+  widths: number[];
+  eager?: boolean;
+}
+
+const { work, sizes, widths, eager = false } = Astro.props;
+const artist = artistOf(work);
+const alt = work.placeholder
+  ? `Photo of ${work.title} by ${artist.name} to follow`
+  : `${work.title} by ${artist.name}, ${work.medium.toLowerCase()}, ${sizeLabel(work)}`;
+const usable = widths.filter((w) => w <= work.image.width);
+const finalWidths = usable.length ? usable : [work.image.width];
+---
+
+<div class:list={["work-media", { "is-placeholder": work.placeholder }]}>
+  <Picture
+    src={work.image}
+    alt={alt}
+    formats={["avif"]}
+    fallbackFormat="webp"
+    widths={finalWidths}
+    sizes={sizes}
+    loading={eager ? "eager" : "lazy"}
+    decoding="async"
+  />
+</div>
+
+<style>
+  .work-media {
+    position: relative;
+  }
+  .work-media :global(img) {
+    width: 100%;
+    height: auto;
+  }
+  .is-placeholder::after {
+    content: "Image to follow";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+</style>

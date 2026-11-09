@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Send the bare domain to www (the address the owner set up).
+[[redirects]]
+  from = "https://dailydosegallery.com/*"
+  to = "https://www.dailydosegallery.com/:splat"
+  status = 301
+  force = true

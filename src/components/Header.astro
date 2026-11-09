@@ -1,0 +1,103 @@
+---
+import { artistUrl, getFeaturedArtist } from "../lib/content";
+
+// While there is one artist, ARTIST goes straight to their page.
+const artist = getFeaturedArtist();
+const items = [
+  { label: "Art", href: "/art/", match: "/art/" },
+  { label: "Artist", href: artistUrl(artist), match: "/artist/" },
+  { label: "About", href: "/about/", match: "/about/" },
+  { label: "Contact", href: "/contact/", match: "/contact/" },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="site-header">
+  <div class="container inner">
+    <a class="logo" href="/" aria-label="Daily Dose Gallery, home">
+      <span class="logo-main">DAILY DOSE</span>
+      <span class="logo-sub">GALLERY</span>
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        {
+          items.map((item) => {
+            const active = path.startsWith(item.match);
+            return (
+              <li>
+                <a href={item.href} aria-current={active ? "page" : undefined}>
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    padding: 28px 0;
+  }
+  .inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+  }
+  .logo {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .logo-main {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    margin-right: -0.28em;
+  }
+  .logo-sub {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.42em;
+    color: var(--muted);
+  }
+  ul {
+    display: flex;
+    gap: 4px 28px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-underline-offset: 6px;
+    transition: color 0.15s;
+  }
+  nav a:hover {
+    color: var(--muted);
+  }
+  nav a[aria-current="page"] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+  }
+  @media (max-width: 520px) {
+    .inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    ul {
+      gap: 4px 22px;
+    }
+  }
+</style>

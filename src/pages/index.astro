@@ -1,0 +1,171 @@
+---
+import { Picture, getImage } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import Newsletter from "../components/Newsletter.astro";
+import WorkImage from "../components/WorkImage.astro";
+import WorkCaption from "../components/WorkCaption.astro";
+import { artistOf, artistUrl, formatOf, getArtwork, getArtworks, sizeLabel } from "../lib/content";
+
+const hero = getArtwork("distance");
+const heroArtist = artistOf(hero);
+const featured = getArtworks().filter((w) => w.featuredOnHome);
+const tall = featured.filter((w) => formatOf(w) === "tall").sort((a, b) => a.order - b.order);
+const large = featured.filter((w) => formatOf(w) !== "tall");
+
+const heroSizes = "(min-width: 1440px) 1325px, 92vw";
+const heroWidths = [640, 960, 1120].filter((w) => w <= hero.image.width);
+const heroOpts = { src: hero.image, width: 1120, height: 560, fit: "cover" as const, widths: heroWidths };
+const heroPreload = await getImage({ ...heroOpts, format: "avif" });
+
+const ratioSum = tall.reduce((s, w) => s + w.image.width / w.image.height, 0);
+---
+
+<Base
+  title="Daily Dose Gallery — Contemporary paintings in Blaricum, the Netherlands"
+  description="Daily Dose Gallery in Blaricum, Het Gooi: contemporary paintings by Julián Villafañe. View the work online or visit us on Tuesday and Thursday."
+  preload={{ srcset: heroPreload.srcSet.attribute, sizes: heroSizes, type: "image/avif" }}
+>
+  <section class="container hero" aria-labelledby="featured-artist">
+    <a href={artistUrl(heroArtist)} class="hero-image" tabindex="-1" aria-hidden="true">
+      <Picture
+        {...heroOpts}
+        formats={["avif"]}
+        fallbackFormat="webp"
+        sizes={heroSizes}
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+      />
+    </a>
+    <div class="split hero-text">
+      <p class="label">Featured artist</p>
+      <div>
+        <h1 class="statement" id="featured-artist">{heroArtist.name}</h1>
+        <p class="hero-meta muted">{hero.title} · {hero.medium} · {sizeLabel(hero)}</p>
+        <a class="link" href={artistUrl(heroArtist)}>View artist</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="art-label">
+    <div class="split">
+      <h2 class="label" id="art-label">Art</h2>
+      <div>
+        <ul class="tall-row" style={`--n:${tall.length};--sum:${ratioSum}`}>
+          {
+            tall.map((work) => (
+              <li class="tall-item" style={`--r:${work.image.width / work.image.height}`}>
+                <WorkImage work={work} sizes="(min-width: 900px) 260px, 30vw" widths={[200, 300, 420]} />
+                <WorkCaption work={work} />
+              </li>
+            ))
+          }
+        </ul>
+
+        <hr class="rule divider" />
+
+        {
+          large.map((work) => (
+            <div class="large">
+              <WorkImage work={work} sizes="(min-width: 900px) 640px, 92vw" widths={[480, 640, 960, 1280]} />
+              <WorkCaption work={work} />
+            </div>
+          ))
+        }
+
+        <a class="link all-works" href="/art/">All works</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="container section" aria-labelledby="about-label">
+    <div class="split">
+      <h2 class="label" id="about-label">About</h2>
+      <div>
+        <p class="statement">Art is a daily dose.</p>
+        <div class="body about-text">
+          <p>
+            Daily Dose Gallery is built on one belief: art belongs in everyday life. Every morning,
+            every evening, every time you walk past it.
+          </p>
+          <p>
+            We choose work that does something to you. Work that lifts you, calms you and makes you
+            feel alive. A painting on your wall is a dose of joy you take every single day.
+          </p>
+        </div>
+        <a class="link" href="/about/">Read more</a>
+      </div>
+    </div>
+  </section>
+
+  <Newsletter />
+</Base>
+
+<style>
+  .hero {
+    padding-top: 8px;
+  }
+  .hero-image {
+    display: block;
+  }
+  .hero-image :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 1;
+    object-fit: cover;
+  }
+  .hero-text {
+    padding-top: 32px;
+  }
+  .hero-meta {
+    margin: 12px 0 8px;
+    font-size: 15px;
+  }
+
+  /* Tall works: one row, all the same height. Each item's width follows its
+     aspect ratio (--r), the shared height fits the row but never exceeds 40rem. */
+  .tall-row {
+    container-type: inline-size;
+    display: flex;
+    gap: var(--gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .tall-item {
+    --h: min(40rem, (100cqw - (var(--n) - 1) * var(--gap)) / var(--sum));
+    flex: none;
+    width: calc(var(--h) * var(--r));
+  }
+  @media (max-width: 520px) {
+    .tall-row {
+      --gap: 12px;
+    }
+    .tall-item :global(.title) {
+      font-size: 15px;
+    }
+    .tall-item :global(.caption) {
+      font-size: 13px;
+    }
+  }
+
+  .divider {
+    margin: 64px 0;
+  }
+  .large {
+    display: grid;
+    gap: 0 32px;
+    align-items: end;
+  }
+  @media (min-width: 768px) {
+    .large {
+      grid-template-columns: minmax(0, 640px) minmax(200px, 1fr);
+    }
+  }
+  .all-works {
+    margin-top: 48px;
+  }
+  .about-text {
+    margin: 32px 0 16px;
+  }
+</style>

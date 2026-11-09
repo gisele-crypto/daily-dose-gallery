@@ -1,0 +1,84 @@
+{
+  "gallery": {
+    "name": "Daily Dose Gallery",
+    "email": "hello@dailydosegallery.com",
+    "street": "Meentweg 37 B",
+    "postalCode": "1261 XS",
+    "city": "Blaricum",
+    "country": "The Netherlands",
+    "openingHours": "Tuesday & Thursday, 10:00–16:00. Other days by appointment.",
+    "openingDays": ["Tuesday", "Thursday"],
+    "opens": "10:00",
+    "closes": "16:00",
+    "kvk": "56314205",
+    "btw": "NL852070019B01",
+    "instagram": "https://www.instagram.com/dailydose.gallery/"
+  },
+  "artist": {
+    "bio": [
+      "Son of a painter and a puppeteer, Julián Villafañe grew up in a world of stories, puppets, colour and poetry. That world lives on in every canvas he paints: full of mystery, magic and life.",
+      "Self-taught and driven by instinct, he has been exhibiting since the mid-1990s, from art fairs across Venezuela to Nuestra América Gallery at the Consulate of Venezuela in New York."
+    ],
+    "exhibitions": [
+      { "title": "Nuestra América Gallery, Consulate of Venezuela, New York", "period": "2008" },
+      { "title": "National art fairs, Venezuela", "period": "Since the mid-1990s" }
+    ],
+    "quote": null
+  },
+  "works": {
+    "order": {
+      "distance": 1,
+      "el-mayamero": 2,
+      "father-mother": 1,
+      "school": 2,
+      "way-home": 3,
+      "waiting": 4,
+      "family-games": 5,
+      "baila-2": 1,
+      "baila-1": 2
+    },
+    "pairs": [["waiting", "family-games"]],
+    "featuredOnHome": ["father-mother", "school", "waiting", "el-mayamero"]
+  },
+  "home": { "heroArtwork": "distance", "heroLabel": "Featured artist" },
+  "about": {
+    "sections": [
+      {
+        "statement": "Art is a daily dose.",
+        "paragraphs": [
+          "Daily Dose Gallery is built on one belief: art belongs in everyday life. Every morning, every evening, every time you walk past it.",
+          "We choose work that does something to you. Work that lifts you, calms you and makes you feel alive. A painting on your wall is a dose of joy you take every single day."
+        ]
+      },
+      {
+        "statement": "Art changes a room. And the person in it.",
+        "paragraphs": [
+          "A painting brings warmth to a wall and life to a space. It gives your home character, a heart and a story of its own.",
+          "It works on you, too. Colour lifts your mood. A moment of looking slows you down and lets you breathe. Every day you see something new in it, and every day it feels a little more yours.",
+          "Hang it where you start your day. Where you come home. Where you rest. That is where it does its work.",
+          "Online, and at home in Blaricum. Easy to discover. Easy to live with."
+        ]
+      }
+    ],
+    "image": "baila-2",
+    "closing": "Take it daily."
+  },
+  "contact": {
+    "appointmentLabel": "By appointment",
+    "appointmentStatement": "Come and see the work in person.",
+    "appointmentText": "Every painting looks different in real life. Visit us on Tuesday or Thursday, or send us an email to arrange another day. We look forward to welcoming you.",
+    "buttonLabel": "Send an email",
+    "spacePhotos": [
+      {
+        "file": "images/space/ground-floor.jpg",
+        "alt": "The ground floor of Daily Dose Gallery, a white space with a glass facade and a concrete wall",
+        "caption": "Ground floor"
+      },
+      {
+        "file": "images/space/upper-floor.jpg",
+        "alt": "The upper floor of Daily Dose Gallery, with a glass wall overlooking the garden",
+        "caption": "Upper floor"
+      }
+    ]
+  }
+}

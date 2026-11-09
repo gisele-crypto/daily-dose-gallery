@@ -3,15 +3,16 @@
  * a publish in Sanity triggers a new Netlify build through a webhook.
  *
  * Environment variables (Netlify → Site configuration → Environment variables):
- *   SANITY_PROJECT_ID   the project id from sanity.io/manage
- *   SANITY_DATASET      usually "production"
+ *   SANITY_STUDIO_PROJECT_ID   the project id from sanity.io/manage
+ *   SANITY_STUDIO_DATASET      usually "production"
+ * (The same variables are used by the Studio at /studio.)
  */
 import { createClient } from "@sanity/client";
 import { toHTML } from "@portabletext/to-html";
 import type { Artist, Artwork, Content, Img } from "./types";
 
-const projectId = import.meta.env.SANITY_PROJECT_ID ?? process.env.SANITY_PROJECT_ID;
-const dataset = import.meta.env.SANITY_DATASET ?? process.env.SANITY_DATASET ?? "production";
+const projectId: string | undefined = process.env.SANITY_STUDIO_PROJECT_ID;
+const dataset: string = process.env.SANITY_STUDIO_DATASET ?? "production";
 
 export function sanityConfigured(): boolean {
   return Boolean(projectId);
@@ -48,7 +49,12 @@ const query = `{
   "about": *[_id == "about"][0]{ sections[]{statement, paragraphs}, "imageSlug": image->slug.current, closing },
   "contact": *[_id == "contact"][0]{
     appointmentLabel, appointmentStatement, appointmentText, buttonLabel,
-    spacePhotos[]{ alt, caption, "image": @${imageFields} }
+    spacePhotos[]{
+      alt, caption, hotspot,
+      "url": asset->url,
+      "width": asset->metadata.dimensions.width,
+      "height": asset->metadata.dimensions.height
+    }
   },
   "privacy": *[_id == "privacy"][0]{ body }
 }`;
@@ -137,7 +143,7 @@ export async function sanityContent(): Promise<Content> {
         appointmentText: data.contact?.appointmentText ?? "",
         buttonLabel: data.contact?.buttonLabel ?? "Send an email",
         spacePhotos: (data.contact?.spacePhotos ?? [])
-          .map((s: any) => ({ image: img(s.image), alt: s.alt ?? "", caption: s.caption ?? "" }))
+          .map((s: any) => ({ image: img(s), alt: s.alt ?? "", caption: s.caption ?? "" }))
           .filter((s: any) => s.image),
       },
       privacyHtml: data.privacy?.body ? toHTML(data.privacy.body) : undefined,

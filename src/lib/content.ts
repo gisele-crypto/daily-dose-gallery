@@ -1,5 +1,5 @@
 /**
- * Content access for all pages. Reads from Sanity when SANITY_PROJECT_ID is
+ * Content access for all pages. Reads from Sanity when SANITY_STUDIO_PROJECT_ID is
  * set (see src/lib/sanity.ts), otherwise from the local starting content.
  * Pages only use the functions below, so the source can change without
  * touching the layout.
@@ -11,7 +11,17 @@ import type { Artist, Artwork, Content, Format } from "./types";
 let cache: Promise<Content> | undefined;
 
 export function getContent(): Promise<Content> {
-  cache ??= sanityConfigured() ? sanityContent() : Promise.resolve(localContent());
+  cache ??= sanityConfigured()
+    ? sanityContent().then((content) => {
+        // Safety net while setting up: an empty Sanity project (before the
+        // first import) keeps the current content online.
+        if (content.artworks.length === 0) {
+          console.warn("[content] Sanity has no artworks yet: using local content.");
+          return localContent();
+        }
+        return content;
+      })
+    : Promise.resolve(localContent());
   return cache;
 }
 

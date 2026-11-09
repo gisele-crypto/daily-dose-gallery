@@ -39,14 +39,27 @@ const html = content.pages.privacyHtml;
     margin-top: 32px;
   }
   .text :global(p + p),
-  .text :global(h2),
-  .text :global(ul) {
+  .text :global(ul),
+  .text :global(ul + p) {
     margin-top: 1em;
   }
   .text :global(h2) {
+    margin-top: 2em;
     font-size: 19px;
     font-weight: 600;
     color: var(--text);
+  }
+  .text :global(ul) {
+    margin-bottom: 0;
+    padding-left: 1.2em;
+  }
+  .text :global(li + li) {
+    margin-top: 0.4em;
+  }
+  .text :global(p:last-child) {
+    margin-top: 2em;
+    font-size: 15px;
+    color: var(--muted);
   }
   .mail,
   .text :global(a) {

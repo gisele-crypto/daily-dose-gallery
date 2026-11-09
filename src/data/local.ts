@@ -10,6 +10,7 @@ import type { ImageMetadata } from "astro";
 import type { Content, Format } from "../lib/types";
 import works from "../../content/works.json";
 import site from "../../content/site.json";
+import { blocksToHtml, type TextBlock } from "../lib/richtext";
 
 type Mod = { default: ImageMetadata };
 const allImages = import.meta.glob<Mod>("../../images/**/*.{png,jpg,jpeg,webp}", { eager: true });
@@ -100,6 +101,7 @@ export function localContent(): Content {
           return image ? [{ image, alt: s.alt, caption: s.caption }] : [];
         }),
       },
+      privacyHtml: blocksToHtml(site.privacy as TextBlock[]),
     },
   };
 }

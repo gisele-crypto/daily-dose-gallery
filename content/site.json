@@ -7,7 +7,10 @@
     "city": "Blaricum",
     "country": "The Netherlands",
     "openingHours": "Tuesday & Thursday, 10:00–16:00. Other days by appointment.",
-    "openingDays": ["Tuesday", "Thursday"],
+    "openingDays": [
+      "Tuesday",
+      "Thursday"
+    ],
     "opens": "10:00",
     "closes": "16:00",
     "kvk": "56314205",
@@ -20,8 +23,14 @@
       "Self-taught and driven by instinct, he has been exhibiting since the mid-1990s, from art fairs across Venezuela to Nuestra América Gallery at the Consulate of Venezuela in New York."
     ],
     "exhibitions": [
-      { "title": "Nuestra América Gallery, Consulate of Venezuela, New York", "period": "2008" },
-      { "title": "National art fairs, Venezuela", "period": "Since the mid-1990s" }
+      {
+        "title": "Nuestra América Gallery, Consulate of Venezuela, New York",
+        "period": "2008"
+      },
+      {
+        "title": "National art fairs, Venezuela",
+        "period": "Since the mid-1990s"
+      }
     ],
     "quote": null
   },
@@ -37,10 +46,23 @@
       "baila-2": 1,
       "baila-1": 2
     },
-    "pairs": [["waiting", "family-games"]],
-    "featuredOnHome": ["father-mother", "school", "waiting", "el-mayamero"]
+    "pairs": [
+      [
+        "waiting",
+        "family-games"
+      ]
+    ],
+    "featuredOnHome": [
+      "father-mother",
+      "school",
+      "waiting",
+      "el-mayamero"
+    ]
   },
-  "home": { "heroArtwork": "distance", "heroLabel": "Featured artist" },
+  "home": {
+    "heroArtwork": "distance",
+    "heroLabel": "Featured artist"
+  },
   "about": {
     "sections": [
       {
@@ -80,5 +102,123 @@
         "caption": "Upper floor"
       }
     ]
-  }
+  },
+  "privacy": [
+    {
+      "type": "p",
+      "text": "Daily Dose Gallery respects your privacy. This statement explains what personal data we collect, why, and what your rights are."
+    },
+    {
+      "type": "h2",
+      "text": "Who we are"
+    },
+    {
+      "type": "p",
+      "text": "Daily Dose Gallery, Meentweg 37 B, 1261 XS Blaricum, the Netherlands."
+    },
+    {
+      "type": "p",
+      "text": "KvK 56314205 · hello@dailydosegallery.com"
+    },
+    {
+      "type": "h2",
+      "text": "What data we collect"
+    },
+    {
+      "type": "li",
+      "text": "When you email us or click “Enquire”: your name, email address and the content of your message."
+    },
+    {
+      "type": "li",
+      "text": "When you sign up for our newsletter: your email address."
+    },
+    {
+      "type": "li",
+      "text": "When you buy a work: your name, address, email address, phone number and payment details, as needed to complete the sale and delivery."
+    },
+    {
+      "type": "h2",
+      "text": "Why we use your data"
+    },
+    {
+      "type": "li",
+      "text": "To answer your questions and enquiries."
+    },
+    {
+      "type": "li",
+      "text": "To send you our newsletter, only if you signed up for it."
+    },
+    {
+      "type": "li",
+      "text": "To complete and deliver a purchase, and to meet our legal and tax obligations."
+    },
+    {
+      "type": "p",
+      "text": "We never sell your data and we do not use it for anything other than the purposes above."
+    },
+    {
+      "type": "h2",
+      "text": "Legal basis"
+    },
+    {
+      "type": "p",
+      "text": "We process your data because you asked us to (answering an enquiry), because you gave your consent (newsletter), to perform a sale, or because the law requires it (tax and accounting records)."
+    },
+    {
+      "type": "h2",
+      "text": "How long we keep your data"
+    },
+    {
+      "type": "li",
+      "text": "Enquiries: up to two years after our last contact."
+    },
+    {
+      "type": "li",
+      "text": "Newsletter: until you unsubscribe. Every newsletter contains an unsubscribe link."
+    },
+    {
+      "type": "li",
+      "text": "Purchases: seven years, as required by Dutch tax law."
+    },
+    {
+      "type": "h2",
+      "text": "Who else sees your data"
+    },
+    {
+      "type": "p",
+      "text": "We work with a small number of trusted service providers who process data on our behalf, such as our website host (Netlify), our content system (Sanity) and our email and newsletter providers. They may only use your data to provide their service to us."
+    },
+    {
+      "type": "h2",
+      "text": "Cookies"
+    },
+    {
+      "type": "p",
+      "text": "Our website does not use tracking or advertising cookies."
+    },
+    {
+      "type": "h2",
+      "text": "Your rights"
+    },
+    {
+      "type": "p",
+      "text": "You have the right to see, correct or delete your personal data, to object to its use, and to receive a copy of it. You can also withdraw your consent at any time. Just email us at hello@dailydosegallery.com."
+    },
+    {
+      "type": "p",
+      "text": "If you are not satisfied with how we handle your data, you can file a complaint with the Dutch Data Protection Authority (Autoriteit Persoonsgegevens)."
+    },
+    {
+      "type": "h2",
+      "text": "Changes"
+    },
+    {
+      "type": "p",
+      "text": "We may update this statement from time to time. The latest version is always on this page."
+    },
+    {
+      "type": "p",
+      "text": "Last updated: November 2026."
+    }
+  ]
 }

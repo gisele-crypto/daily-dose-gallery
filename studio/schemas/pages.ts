@@ -158,7 +158,15 @@ export const privacy = defineType({
       description: "Zolang dit leeg is, staat er een korte tijdelijke tekst op de site.",
       type: "array",
       of: [
-        ...simpleText,
+        defineArrayMember({
+          type: "block",
+          styles: [
+            { title: "Gewoon", value: "normal" },
+            { title: "Kopje", value: "h2" },
+          ],
+          lists: [{ title: "Opsomming", value: "bullet" }],
+          marks: simpleText[0]?.marks,
+        }),
       ],
     }),
   ],

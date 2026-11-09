@@ -139,6 +139,28 @@ for (const p of site.contact.spacePhotos) {
 }
 const { spacePhotos: _ignored, ...contactTexts } = site.contact;
 await save({ _id: "contact", _type: "contact", ...contactTexts, spacePhotos: photos });
-await save({ _id: "privacy", _type: "privacy" });
+// Privacy statement: headings, paragraphs and bullet lists; email addresses as links.
+const richBlock = ({ type, text }) => {
+  const markDefs = [];
+  const children = [];
+  let last = 0;
+  for (const m of text.matchAll(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g)) {
+    if (m.index > last) children.push({ _type: "span", _key: key(), text: text.slice(last, m.index), marks: [] });
+    const linkKey = key();
+    markDefs.push({ _type: "link", _key: linkKey, href: `mailto:${m[0]}` });
+    children.push({ _type: "span", _key: key(), text: m[0], marks: [linkKey] });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) children.push({ _type: "span", _key: key(), text: text.slice(last), marks: [] });
+  return {
+    _type: "block",
+    _key: key(),
+    style: type === "h2" ? "h2" : "normal",
+    ...(type === "li" ? { listItem: "bullet", level: 1 } : {}),
+    markDefs,
+    children,
+  };
+};
+await save({ _id: "privacy", _type: "privacy", body: (site.privacy ?? []).map(richBlock) });
 
 console.log("Done. Open /studio to check, then publish anything to trigger a site build.");

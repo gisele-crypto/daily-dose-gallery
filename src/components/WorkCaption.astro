@@ -11,19 +11,41 @@ interface Props {
   /** Show price line and ENQUIRE (Art and Artist pages). */
   showStatus?: boolean;
   headingLevel?: "h2" | "h3" | "h4";
+  /** Medium and size on separate lines (narrow tall works), so every
+      caption in a row breaks the same way. */
+  stacked?: boolean;
 }
 
-const { content, work, artist, showArtist = false, showStatus = false, headingLevel = "h3" } =
-  Astro.props;
+const {
+  content,
+  work,
+  artist,
+  showArtist = false,
+  showStatus = false,
+  headingLevel = "h3",
+  stacked = false,
+} = Astro.props;
 const Heading = headingLevel;
 ---
 
 <div class="caption">
   <Heading class="title">{work.title}</Heading>
   {showArtist && <a class="artist" href={artistUrl(artist)}>{artist.name}</a>}
-  <p class="meta">
-    {work.medium} · <span class="nowrap">{sizeLabel(work)}</span>{work.year && <> · {work.year}</>}
-  </p>
+  {
+    stacked ? (
+      <p class="meta">
+        {work.medium}
+        <br />
+        <span class="nowrap">{sizeLabel(work)}</span>
+        {work.year && <> · {work.year}</>}
+      </p>
+    ) : (
+      <p class="meta">
+        {work.medium} · <span class="nowrap">{sizeLabel(work)}</span>
+        {work.year && <> · {work.year}</>}
+      </p>
+    )
+  }
   {
     showStatus && (
       <div class="status">

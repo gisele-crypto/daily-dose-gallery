@@ -17,8 +17,10 @@ const alt = work.placeholder
   ? `Photo of ${work.title} by ${artistName} to follow`
   : `${work.title} by ${artistName}, ${work.medium.toLowerCase()}, ${sizeLabel(work)}`;
 // Never generate sizes larger than the original photo.
-const usable = widths.filter((w) => w <= work.image.width);
-const finalWidths = usable.length ? usable : [work.image.width];
+// Never generate sizes larger than the original photo; add the original
+// itself when a larger size was asked for.
+const usable = widths.filter((w) => w < work.image.width);
+const finalWidths = widths.some((w) => w >= work.image.width) ? [...usable, work.image.width] : usable;
 ---
 
 <div class:list={["work-media", { "is-placeholder": work.placeholder }]} id={work.slug}>

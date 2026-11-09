@@ -27,14 +27,15 @@ const large = featured.filter((w) => formatOf(w) !== "tall");
 
 // Wide 16:8 crop of the hero painting, centred on its hotspot when set.
 const heroSizes = "(min-width: 1440px) 1325px, 92vw";
-const heroWidths = [640, 960, 1280, 1600].filter((w) => w <= hero.image.width);
+const heroWidths = [640, 960, 1280, 1600].filter((w) => w < hero.image.width);
+heroWidths.push(Math.min(1600, hero.image.width));
 const heroOpts = {
   ...srcProps(hero.image),
   width: Math.min(1600, hero.image.width),
   height: Math.round(Math.min(1600, hero.image.width) / 2),
   fit: "cover" as const,
   position: hero.focus ?? "center",
-  widths: heroWidths.length ? heroWidths : [hero.image.width],
+  widths: heroWidths,
 };
 const heroPreload = await getImage({ ...heroOpts, format: "avif" });
 const about = content.pages.about.sections[0];
